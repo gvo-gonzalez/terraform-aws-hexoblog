@@ -1,0 +1,57 @@
+---
+- name: create circle ci directory
+  file: 
+    path: "{{projectPath}}/.circleci"
+    state: directory
+    owner: "{{ envUser }}"
+    group: "{{ envUser }}"
+    mode: 0644
+
+- name: Copy CIRCLE CI config file for hexo  project
+  template:
+    src: "templates/{{ item.src }}"
+    dest: "{{ projectPath }}/.circleci/config.yml"
+    owner: "{{ envUser }}"
+    group: "{{ envUser }}"
+    force: yes
+    mode: 0644
+  loop:
+    - { src: circle.j2 }
+    
+- name: stat directory .git in our theme clone
+  stat: 
+    path: "{{ projectPath }}/themes/{{ hexo_theme_name }}/.git"
+  register: hexo_them_git_dir
+
+- name: Remove .git directory from theme directory
+  file:
+    path: "{{ projectPath }}/themes/{{ hexo_theme_name }}/.git"
+    state: absent
+  when: hexo_them_git_dir.stat.exists
+
+- name: stat our git directory before initialize 
+  stat:
+    path: "{{ projectPath }}/.git"
+  register: project_repo
+
+- debug:
+    msg: 
+      - "{{ project_repo }}"
+
+- name: Initialize git config
+  shell: "{{ item }} chdir={{projectPath}}"
+  with_items:
+    - git config --global user.email "you@example.com"
+    - git config --global user.name "Your Name"
+  become: true
+  become_user: "{{ envUser }}"
+
+- name: Initialize local repo with remote origin
+  shell: "{{ item }} chdir={{ projectPath }}"
+  with_items:
+    - git init
+    - git add .
+    - git commit -m "first commit"
+    - git remote add origin "{{ projectRepo }}"
+  when: not project_repo.stat.exists
+  

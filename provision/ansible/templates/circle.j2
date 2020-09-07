@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: node:13.12.0
+    working_directory: ~/{{ aws_s3_bucket_name }}
+    steps:
+      - checkout
+      - run:
+          name: Install Hexo Cli
+          command: npm install -g hexo
+      - restore_cache:
+          keys:
+            - npm-deps-{{ '{{' }} checksum "package.json" {{ '}}' }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: npm-deps-{{ '{{' }} checksum "package.json" {{ '}}' }}
+          paths:
+            - node_modules
+      - run:
+          name: Generate static website
+          command: hexo generate
+      - run:
+          name: Install aws cli command
+          command: |
+            apt-get update &&  apt-get install -y python-dev
+            curl -O https://bootstrap.pypa.io/get-pip.py
+            python get-pip.py
+            pip install awscli --upgrade
+            aws --version
+            aws s3 ls
+      - run:
+          name: Push to S3 bucket
+          command: cd public/ && aws s3 sync . s3://{{ aws_s3_bucket_name }} --delete
+ 

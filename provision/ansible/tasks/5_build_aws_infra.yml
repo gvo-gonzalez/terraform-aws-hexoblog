@@ -1,0 +1,23 @@
+---
+- name: Check if we have synced our terraform directory
+  stat:
+    path: "{{ aws_projectPath }}"
+  register: check_infra_dir
+  become: yes
+  become_user: "{{ envUser }}"
+  notify: restart_ntp
+
+- name: Exit if directory was not shared
+  fail: msg="Nothing to upgrade"
+  when: not check_infra_dir.stat.exists
+
+- name: Creates infra with terraform
+  terraform:
+    binary_path: "{{ terraform_exe }}"
+    force_init: yes
+    project_path: "{{ aws_projectPath }}"
+    state: present
+  register: terraform_output
+
+- debug:
+    msg: "{{ terraform_output.stdout }}"

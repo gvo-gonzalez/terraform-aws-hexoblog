@@ -1,0 +1,23 @@
+---
+- hosts: localenv1
+  become: true
+  gather_facts: false
+
+  vars_files:
+    - vars.yml
+  
+  pre_tasks:
+    - name: Update Cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  handlers:
+    - include: handlers/handlers.yml
+
+  tasks:
+    - include: tasks/1_get_base_pkgs.yml
+    - include: tasks/2_build_hexo_env.yml
+    - include: tasks/3_run_hexoblog.yml
+    - include: tasks/4_git_local_init.yml
+    - include: tasks/5_build_aws_infra.yml

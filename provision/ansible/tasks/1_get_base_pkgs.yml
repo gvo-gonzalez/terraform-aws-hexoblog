@@ -1,0 +1,55 @@
+---
+# Install terraform
+- name: Install unzip package
+  apt: 
+    name: [
+      'unzip',
+      'ntp'
+    ]
+    state: present
+  notify: restart_ntp
+
+- name: Download terraform to create proper infraestructure on aws for run this project
+  get_url:
+    url: https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip
+    dest: /tmp/terraform_0.12.24_linux_amd64.zip
+    mode: 0644
+    owner: "{{ envUser }}"
+
+- name: Unzip compressed file
+  unarchive:
+    remote_src: yes
+    src: "/tmp/terraform_0.12.24_linux_amd64.zip"
+    dest: "/usr/local/bin"
+    mode: 0755
+  tags:
+    - unzip-terraform
+
+    # Install Node
+- name: Enabling node source repository
+  get_url: 
+    url: "https://deb.nodesource.com/{{ node_version }}"
+    dest: "/tmp/node_installer.x"
+    mode: 0755
+
+- name: Run repository creator
+  command: >
+    bash node_installer.x
+    chdir=/tmp
+  
+- name: Installing Node.js as well as the npm
+  apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: Get node version
+  command: >
+    node --version
+  register: node_version
+
+- debug:
+    msg:
+      - "Your Node Version Installed is: {{ node_version.stdout }}"
+  
+  

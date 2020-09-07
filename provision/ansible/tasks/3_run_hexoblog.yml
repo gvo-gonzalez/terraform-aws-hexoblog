@@ -1,0 +1,57 @@
+---
+- name: Check if had cloned hexo project
+  stat:
+    path: "{{ projectPath }}/package.json"
+  register: hexo_stat
+
+- name: Create Hexo project
+  shell: "{{ item }}"
+  become: yes
+  become_user: "{{ envUser }}"
+  with_items:
+    - bash -c 'hexo init {{ projectPath }}'
+  args:
+    chdir: "{{ projectPath }}"
+  when: not hexo_stat.stat.exists 
+
+- name: Check if we had cloned our theme
+  stat:
+    path: "{{ projectPath }}/themes/{{ hexo_theme_name }}"
+  register: hexo_theme 
+
+- name: Change default theme included on hexo setup
+  git:
+    repo: "{{ hexo_theme_git_repository }}"
+    dest: "{{ projectPath }}/themes/{{ hexo_theme_name }}"
+  become: yes
+  become_user: "{{ envUser }}"
+  when: not hexo_theme.stat.exists
+
+- name: Creates Hexo config file and shell script to run locally our blog
+  template:
+    src: "templates/{{ item.src }}"
+    dest: "{{ projectPath }}/{{ item.dest }}"
+    owner: "{{ envUser }}"
+    group: "{{ envUser }}"
+    mode: 0644
+  loop:
+    - { src: _config.j2, dest: _config.yml }
+    - { src: startHexoCli.sh.j2, dest: startHexoCli.sh }
+
+- name: creates template for running hexo as a daemon with pm2
+  template:
+    src: "templates/{{ hexo_jsdaemon }}"
+    dest: "{{ projectPath }}/daemon.js"
+    owner: "{{ envUser }}"
+    group: "{{ envUser }}"
+    mode: 0644
+
+- name: Build node project
+  shell: "{{ item }}"
+  with_items:
+    - bash -c 'pm2 stop all'
+    - bash -c 'npm install --prefix "{{projectPath}}"'
+    - bash -c 'pm2 start "{{projectPath}}"/startHexoCli.sh >/dev/null 2>&1'
+  become: yes
+  become_user: "{{ envUser }}"
+  failed_when: "pm2_apps_result.stderr is defined and pm2_apps_result.stderr.find('[ERROR]') != -1"

@@ -1,0 +1,39 @@
+# Get Node packages to run Hexo
+---
+- name: create project directory
+  file:
+    path: "{{ projectPath }}"
+    state: directory
+    mode: 0655
+    owner: "{{ envUser }}"
+    group: "{{ envUser }}"
+
+- name: npm set certificates path
+  command: >
+    npm config set ca ""
+    chdir="{{ projectPath }}"
+
+- name: install hexo
+  npm: 
+    name: hexo
+    path: "{{ projectPath }}"
+    global: yes
+    state: present
+    unsafe_perm: yes
+
+- name: install pm2
+  npm: 
+    name: pm2
+    path: "{{ projectPath }}"
+    global: yes
+    state: present
+    unsafe_perm: yes
+
+- name: install express
+  npm: 
+    name: express
+    path: "{{ projectPath }}"
+    global: yes
+    state: present
+    unsafe_perm: yes
+

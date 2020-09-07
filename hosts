@@ -1,0 +1,2 @@
+[localenv]
+localenv1 ansible_host=192.168.10.10 ansible_port=22 ansible_python_interpreter=/usr/bin/python3

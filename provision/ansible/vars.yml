@@ -1,0 +1,27 @@
+---
+# Some variables are not used 
+project_url: www.samplehexoblog.com
+hexo_cwd: ~/www/
+hexo_jsdaemon: daemon.js.j2
+infra_dir: terraform.src
+envUser: "vagrant"
+node_version: "setup_14.x" # Format is setup_8.x, setup_10.x..etc for alternative versions
+projectPath: "/vagrant_data/vmpath/hexo_src"
+hexo_theme_name: "magnetic"
+hexo_theme_git_repository: "https://github.com/klugjo/hexo-theme-magnetic.git"
+# Set your S3 Bucket created with terraform
+aws_s3_bucket_name: "s3hexobucket.your-domain.com" 
+# Hexo config file section
+conf_title: "Serverless Hexo Blog"
+conf_subtitle: "Some example subtitle"
+conf_description: "Example, Hexo, Serverless, Blog setup"
+conf_keywords: "blog, example, hexo"
+conf_author: "Zaraza Dur Juu"
+conf_language: "en"
+conf_timezone: "America/Argentina/Buenos_Aires"
+conf_theme: "magnetic"
+#
+aws_projectPath: "/vagrant_data/vmpath/terraform"
+terraform_exe: "/usr/local/bin/terraform"
+projectRepo: "https://github.com/your-git-user/your-hexo-code-repository.git"
+
